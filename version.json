@@ -1,0 +1,11 @@
+{
+  "version": "1.3.0",
+  "files": [
+    "codex-rtl-patch.js",
+    "watch-codex-rtl.ps1",
+    "update-codex-rtl.ps1",
+    "auto-update-loop.ps1",
+    "Start-Codex-RTL.ps1",
+    "version.json"
+  ]
+}
