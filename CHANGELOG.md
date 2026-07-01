@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.1 - 2026-07-01
+
+- Detects Arabic anywhere in mixed Arabic/English text instead of relying on the first strong character.
+- Adds dynamic text-node detection for Codex content rendered outside the original selectors.
+- Improves bidirectional isolation while keeping inline code, code blocks, and terminal output LTR.
+- Explicitly restores left alignment for English-only content.
+- Community contribution by [@omar6060](https://github.com/omar6060) in pull request #1.
+
 ## 1.3.0 - 2026-06-30
 
 - Added a `Codex Arabic RTL` desktop shortcut that launches Codex with its local debugging endpoint enabled.
