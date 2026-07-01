@@ -10,8 +10,8 @@ jobs:
   javascript-and-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: Check JavaScript syntax
@@ -38,7 +38,7 @@ jobs:
   powershell:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Parse PowerShell scripts
         shell: powershell
         run: |
@@ -50,4 +50,3 @@ jobs:
             if ($errors) { $failures += $errors }
           }
           if ($failures) { $failures | Format-List; exit 1 }
-
