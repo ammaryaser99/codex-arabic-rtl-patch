@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '1.3.0';
+  const VERSION = '1.3.1';
   const STYLE_ID = 'codex-arabic-rtl-patch';
   const RTL_ATTR = 'data-codex-rtl';
   const FORCE_ATTR = 'data-codex-direction';
@@ -14,16 +14,16 @@
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = [
-    '[' + RTL_ATTR + '="true"] { direction: rtl !important; text-align: right !important; unicode-bidi: plaintext !important; }',
-    '[' + RTL_ATTR + '="false"] { direction: ltr !important; unicode-bidi: plaintext !important; }',
+    '[' + RTL_ATTR + '="true"] { direction: rtl !important; text-align: right !important; unicode-bidi: isolate !important; }',
+    '[' + RTL_ATTR + '="false"] { direction: ltr !important; text-align: left !important; unicode-bidi: isolate !important; }',
     '[' + RTL_ATTR + '="true"] pre,',
-    '[' + RTL_ATTR + '="true"] code,',
+    '[' + RTL_ATTR + '="true"] pre code,',
+    '[' + RTL_ATTR + '="true"] [class*="terminal" i] { direction: ltr !important; text-align: left !important; unicode-bidi: isolate !important; }',
+    '[' + RTL_ATTR + '="true"] :not(pre) > code,',
     '[' + RTL_ATTR + '="true"] kbd,',
-    '[' + RTL_ATTR + '="true"] samp,',
-    '[' + RTL_ATTR + '="true"] [class*="terminal" i],',
-    '[' + RTL_ATTR + '="true"] [class*="code" i] { direction: ltr !important; text-align: left !important; unicode-bidi: isolate !important; }',
+    '[' + RTL_ATTR + '="true"] samp { direction: ltr !important; unicode-bidi: isolate !important; }',
     '.ProseMirror { unicode-bidi: plaintext !important; caret-color: currentColor; }',
-    '.ProseMirror[' + RTL_ATTR + '="true"] { padding-inline: 0.125rem; }',
+    '.ProseMirror[' + RTL_ATTR + '="true"] { unicode-bidi: isolate !important; padding-inline: 0.125rem; }',
     '[class*="markdownContent"][' + RTL_ATTR + '="true"] { width: 100%; }',
     '[class*="markdownContent"][' + RTL_ATTR + '="true"] > * { text-align: right; }'
   ].join('\n');
@@ -33,12 +33,18 @@
     'p', 'ol', 'ul', 'li', 'dl', 'dt', 'dd',
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'td', 'th',
     '[contenteditable="true"]', '[role="textbox"]', '[class*="truncate"]',
-    '[class*="markdownContent"]'
+    '[class*="markdownContent"]', '[class*="whitespace-pre-wrap"]'
+  ].join(',');
+  const textBlockSelector = [
+    'p', 'li', 'blockquote', 'td', 'th',
+    '[contenteditable="true"]', '[role="textbox"]',
+    '[class*="markdownContent"]', '[class*="whitespace-pre-wrap"]',
+    'div'
   ].join(',');
 
-  function firstStrongDirection(text) {
+  function textDirection(text) {
+    if (arabic.test(text || '')) return 'rtl';
     for (const char of text || '') {
-      if (arabic.test(char)) return 'rtl';
       if (latin.test(char)) return 'ltr';
     }
     return null;
@@ -47,7 +53,7 @@
   function applyDirection(element) {
     if (!(element instanceof HTMLElement)) return;
     const forced = element.getAttribute(FORCE_ATTR);
-    const direction = forced || firstStrongDirection(element.innerText || element.textContent || '');
+    const direction = forced || textDirection(element.innerText || element.textContent || '');
     if (!direction) {
       element.removeAttribute(RTL_ATTR);
       element.setAttribute('dir', 'auto');
@@ -59,9 +65,24 @@
     else if (element.getAttribute('lang') === 'ar') element.removeAttribute('lang');
   }
 
+  function applyTextNodeDirection(textNode) {
+    const text = textNode.nodeValue || '';
+    if (!arabic.test(text)) return;
+    const parent = textNode.parentElement;
+    if (!parent || parent.closest('pre, code, kbd, samp, script, style')) return;
+    const block = parent.closest(textBlockSelector);
+    if (block) applyDirection(block);
+  }
+
   function scan(root = document) {
     if (root instanceof HTMLElement && root.matches(selector)) applyDirection(root);
     root.querySelectorAll?.(selector).forEach(applyDirection);
+    const walkerRoot = root instanceof Document ? root.body : root;
+    if (!walkerRoot) return;
+    const walker = document.createTreeWalker(walkerRoot, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      applyTextNodeDirection(node);
+    }
   }
 
   let queued = false;
