@@ -1,0 +1,53 @@
+name: Validate patch
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  javascript-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check codex-rtl-patch.js
+      - name: Validate version and update files
+        shell: pwsh
+        run: |
+          $manifest = Get-Content -Raw version.json | ConvertFrom-Json
+          $source = Get-Content -Raw codex-rtl-patch.js
+          $sourceVersion = [regex]::Match($source, "const VERSION = '([^']+)';").Groups[1].Value
+          if ($manifest.version -ne $sourceVersion) {
+            throw "Version mismatch: manifest=$($manifest.version), source=$sourceVersion"
+          }
+          foreach ($file in $manifest.files) {
+            if (-not (Test-Path -LiteralPath $file)) { throw "Missing update file: $file" }
+          }
+      - name: Ensure private drafts are not tracked
+        run: |
+          if git ls-files | grep -q '^social/'; then
+            echo 'Private social drafts must not be tracked.'
+            exit 1
+          fi
+
+  powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse PowerShell scripts
+        shell: powershell
+        run: |
+          $failures = @()
+          Get-ChildItem -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors) { $failures += $errors }
+          }
+          if ($failures) { $failures | Format-List; exit 1 }
+

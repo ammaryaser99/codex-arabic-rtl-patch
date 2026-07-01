@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.0 - 2026-07-01
+
+- Classifies direction independently per message and per text block.
+- Keeps English-heavy mixed blocks in automatic direction instead of forcing the whole block RTL.
+- Isolates English runs and plain-text file paths as LTR inside Arabic content.
+- Expands LTR protection for code, highlighted syntax, terminals, and Monaco editor content.
+- Removes parent-message alignment rules that could override English child blocks.
+- Processes new and changed DOM nodes incrementally to reduce repeated full-page scans.
+- Inspired by community feedback and a comparison with [Codex RTL Toolkit](https://github.com/pawnsmaster/codex-rtl-toolkit).
+
 ## 1.3.1 - 2026-07-01
 
 - Detects Arabic anywhere in mixed Arabic/English text instead of relying on the first strong character.

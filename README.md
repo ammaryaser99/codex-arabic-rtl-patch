@@ -10,8 +10,10 @@ It automatically detects Arabic-first content and fixes the direction and alignm
 - The message composer
 - Lists, headings, quotes, and tables
 - Arabic and mixed Arabic/English sidebar titles
+- Independent direction detection for each message and text block
+- Automatic LTR isolation for English runs and file paths inside Arabic text
 
-English-first text stays LTR, and code/terminal blocks remain LTR inside Arabic messages.
+English-heavy text stays automatic/LTR, and code, terminal, file-path, and editor content remain LTR inside Arabic messages.
 
 ## Download and install
 
@@ -50,7 +52,7 @@ This matters because a future Codex UI update may rename internal elements. The 
 - `Ctrl + Right Shift`: force RTL
 - `Ctrl + Left Shift`: force LTR
 
-Normally, direction is detected from the first strong Arabic or English character.
+Normally, direction is classified independently for each text block using its Arabic/English character balance.
 
 ## Safety and removal
 
@@ -72,6 +74,9 @@ After uninstalling, restart Codex to clear the already-injected styles from the 
 
 This is an unofficial community patch and is not affiliated with or supported by OpenAI. Codex updates may require a newer patch release.
 
+## Acknowledgements
+
+Version 1.4.0 incorporates ideas from community feedback and [Codex RTL Toolkit](https://github.com/pawnsmaster/codex-rtl-toolkit). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution and license details.
 
 ## License
 
