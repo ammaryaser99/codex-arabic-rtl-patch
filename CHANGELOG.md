@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1 - 2026-07-01
+
+- Adds cache-busting to GitHub release checks so newly published versions are detected immediately.
+
 ## 1.4.0 - 2026-07-01
 
 - Classifies direction independently per message and per text block.

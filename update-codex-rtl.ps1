@@ -5,6 +5,7 @@ $repo = 'ammaryaser99/codex-arabic-rtl-patch'
 $installDir = Join-Path $env:LOCALAPPDATA 'CodexArabicRTL'
 $manifestPath = Join-Path $installDir 'version.json'
 $apiHeaders = @{ 'User-Agent' = 'Codex-Arabic-RTL-Patch' }
+$cacheBust = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
 function Write-UpdateStatus([string]$message, [ConsoleColor]$color = 'Gray') {
     if (-not $Silent) { Write-Host $message -ForegroundColor $color }
@@ -16,7 +17,7 @@ try {
     }
 
     $local = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
-    $releaseResponse = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases" -Headers $apiHeaders -UseBasicParsing
+    $releaseResponse = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases?per_page=20&cache=$cacheBust" -Headers $apiHeaders -UseBasicParsing
     $releases = @($releaseResponse | ForEach-Object { $_ })
     $release = $releases | Where-Object { -not $_.draft } | Select-Object -First 1
     if (-not $release) { throw 'No published GitHub release was found.' }
