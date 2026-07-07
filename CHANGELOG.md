@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.2 - 2026-07-07
+
+- Makes the `Codex Arabic RTL` launcher restart the watcher whenever it is missing.
+- Restarts the auto-update loop when enabled but no longer running.
+- Verifies that the DevTools endpoint belongs to a Codex renderer before treating it as ready.
+- Fixes cases where Codex launched on port 9223 but the RTL style was never injected.
+
 ## 1.4.1 - 2026-07-01
 
 - Adds cache-busting to GitHub release checks so newly published versions are detected immediately.

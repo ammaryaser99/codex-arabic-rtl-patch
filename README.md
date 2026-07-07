@@ -45,6 +45,8 @@ There are two separate protections:
 1. The local watcher starts with Windows and reconnects whenever Codex starts, restarts, or is updated by the Microsoft Store. It reapplies the installed RTL patch automatically.
 2. When option `2` is enabled, a user-level background updater checks this GitHub repository every six hours. If a newer patch version is published, it downloads the new files and restarts the watcher.
 
+The `Codex Arabic RTL` desktop shortcut also checks both background processes on every launch and restarts either one if Windows stopped it.
+
 This matters because a future Codex UI update may rename internal elements. The watcher handles normal app restarts automatically; the GitHub updater delivers compatibility fixes when the patch itself needs to change.
 
 ## Composer controls

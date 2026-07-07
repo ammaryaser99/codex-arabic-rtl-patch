@@ -19,14 +19,46 @@ if ($CreateShortcut) {
     exit 0
 }
 
+function Test-BackgroundScriptRunning([string]$ScriptPath) {
+    return [bool](Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
+        Where-Object { $_.CommandLine -like "*$ScriptPath*" })
+}
+
+function Start-BackgroundScript([string]$ScriptPath) {
+    if (-not (Test-Path -LiteralPath $ScriptPath)) { return }
+    if (Test-BackgroundScriptRunning $ScriptPath) { return }
+    Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @(
+        '-NoProfile', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass',
+        '-File', ('"{0}"' -f $ScriptPath)
+    )
+}
+
+function Ensure-BackgroundServices {
+    Start-BackgroundScript (Join-Path $PSScriptRoot 'watch-codex-rtl.ps1')
+    $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+    $autoUpdate = Get-ItemPropertyValue -Path $runKey -Name 'CodexArabicRTLAutoUpdate' -ErrorAction SilentlyContinue
+    if ($autoUpdate) {
+        Start-BackgroundScript (Join-Path $PSScriptRoot 'auto-update-loop.ps1')
+    }
+}
+
+Ensure-BackgroundServices
+
 $debuggingReady = $false
 foreach ($port in @(9223, 9222, 9224, 9225)) {
     try {
-        $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$port/json" -TimeoutSec 1
-        if ($response.StatusCode -eq 200) { $debuggingReady = $true; break }
+        $response = Invoke-RestMethod -Uri "http://127.0.0.1:$port/json" -TimeoutSec 1
+        $targets = @($response | ForEach-Object { $_ })
+        if ($targets | Where-Object { $_.type -eq 'page' -and $_.url -like 'app://-/*' }) {
+            $debuggingReady = $true
+            break
+        }
     } catch { }
 }
-if ($debuggingReady) { exit 0 }
+if ($debuggingReady) {
+    Start-Sleep -Milliseconds 500
+    exit 0
+}
 
 $mainProcesses = Get-CimInstance Win32_Process -Filter "Name='Codex.exe'" |
     Where-Object { $_.ExecutablePath -eq $codexExe -and $_.CommandLine -notlike '*--type=*' }
@@ -46,4 +78,4 @@ Start-Process -FilePath $codexExe -ArgumentList @(
     '--remote-debugging-port=9223',
     '--no-first-run'
 )
-
+Ensure-BackgroundServices
