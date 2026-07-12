@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1 - 2026-07-12
+
+- Connects to the ChatGPT debugging endpoint through `localhost`, supporting releases that listen on IPv6 loopback (`::1`) instead of IPv4 (`127.0.0.1`).
+
 ## 1.5.0 - 2026-07-12
 
 - Supports the renamed ChatGPT Windows app and its new `ChatGPT.exe` executable.

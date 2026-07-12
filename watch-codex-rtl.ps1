@@ -43,12 +43,15 @@ try {
 
     while ($true) {
         $targets = @()
-        foreach ($port in @(9223, 9222, 9224, 9225)) {
-            try {
-                $response = Invoke-RestMethod -Uri "http://127.0.0.1:$port/json" -TimeoutSec 1
-                $targets = @($response | ForEach-Object { $_ })
-                if ($targets.Count -gt 0) { break }
-            } catch { }
+        foreach ($hostName in @('localhost', '127.0.0.1')) {
+            foreach ($port in @(9223, 9222, 9224, 9225)) {
+                try {
+                    $response = Invoke-RestMethod -Uri "http://${hostName}:$port/json" -TimeoutSec 1
+                    $targets = @($response | ForEach-Object { $_ })
+                    if ($targets.Count -gt 0) { break }
+                } catch { }
+            }
+            if ($targets.Count -gt 0) { break }
         }
 
         $liveIds = @($targets | ForEach-Object { $_.id })

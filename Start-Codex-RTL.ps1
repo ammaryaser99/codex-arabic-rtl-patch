@@ -57,15 +57,18 @@ function Ensure-BackgroundServices {
 Ensure-BackgroundServices
 
 $debuggingReady = $false
-foreach ($port in @(9223, 9222, 9224, 9225)) {
-    try {
-        $response = Invoke-RestMethod -Uri "http://127.0.0.1:$port/json" -TimeoutSec 1
-        $targets = @($response | ForEach-Object { $_ })
-        if ($targets | Where-Object { $_.type -eq 'page' -and $_.url -like 'app://-/*' }) {
-            $debuggingReady = $true
-            break
-        }
-    } catch { }
+foreach ($hostName in @('localhost', '127.0.0.1')) {
+    foreach ($port in @(9223, 9222, 9224, 9225)) {
+        try {
+            $response = Invoke-RestMethod -Uri "http://${hostName}:$port/json" -TimeoutSec 1
+            $targets = @($response | ForEach-Object { $_ })
+            if ($targets | Where-Object { $_.type -eq 'page' -and $_.url -like 'app://-/*' }) {
+                $debuggingReady = $true
+                break
+            }
+        } catch { }
+    }
+    if ($debuggingReady) { break }
 }
 if ($debuggingReady) {
     Start-Sleep -Milliseconds 500
