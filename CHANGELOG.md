@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0 - 2026-07-12
+
+- Supports the renamed ChatGPT Windows app and its new `ChatGPT.exe` executable.
+- Detects both the current ChatGPT executable and the legacy Codex executable.
+- Creates a `ChatGPT Arabic RTL` desktop shortcut and migrates legacy startup entries and files.
+- Keeps the existing GitHub release/update channel compatible.
+
 ## 1.4.2 - 2026-07-07
 
 - Makes the `Codex Arabic RTL` launcher restart the watcher whenever it is missing.

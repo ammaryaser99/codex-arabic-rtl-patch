@@ -3,7 +3,7 @@ $logPath = Join-Path $PSScriptRoot 'watcher.log'
 function Write-PatchLog([string]$Message) {
     Add-Content -LiteralPath $logPath -Value ("{0:u} {1}" -f (Get-Date), $Message) -ErrorAction SilentlyContinue
 }
-$mutex = [Threading.Mutex]::new($false, 'Local\CodexArabicRTLPatch')
+$mutex = [Threading.Mutex]::new($false, 'Local\ChatGPTArabicRTLPatch')
 if (-not $mutex.WaitOne(0, $false)) { exit 0 }
 Add-Type -AssemblyName System.Web.Extensions
 $serializer = [Web.Script.Serialization.JavaScriptSerializer]::new()

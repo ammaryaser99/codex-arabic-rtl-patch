@@ -1,11 +1,18 @@
 param([switch]$CreateShortcut)
 
 $ErrorActionPreference = 'Stop'
-$shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Codex Arabic RTL.lnk'
-$package = Get-AppxPackage -Name 'OpenAI.Codex' | Select-Object -First 1
-if (-not $package) { throw 'The Codex desktop app is not installed.' }
-$codexExe = Join-Path $package.InstallLocation 'app\Codex.exe'
-if (-not (Test-Path -LiteralPath $codexExe)) { throw "Codex.exe was not found at $codexExe" }
+$shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) 'ChatGPT Arabic RTL.lnk'
+$legacyShortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Codex Arabic RTL.lnk'
+$package = Get-AppxPackage | Where-Object { $_.Name -eq 'OpenAI.Codex' } | Select-Object -First 1
+if (-not $package) { throw 'The ChatGPT desktop app is not installed.' }
+
+$appDirectory = Join-Path $package.InstallLocation 'app'
+$appExe = @('ChatGPT.exe', 'Codex.exe') |
+    ForEach-Object { Join-Path $appDirectory $_ } |
+    Where-Object { Test-Path -LiteralPath $_ } |
+    Select-Object -First 1
+if (-not $appExe) { throw "ChatGPT.exe was not found under $appDirectory" }
+$processName = [IO.Path]::GetFileNameWithoutExtension($appExe)
 
 if ($CreateShortcut) {
     $shell = New-Object -ComObject WScript.Shell
@@ -13,9 +20,10 @@ if ($CreateShortcut) {
     $shortcut.TargetPath = 'powershell.exe'
     $shortcut.Arguments = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $PSCommandPath
     $shortcut.WorkingDirectory = $PSScriptRoot
-    $shortcut.IconLocation = "$codexExe,0"
-    $shortcut.Description = 'Launch Codex with Arabic RTL support'
+    $shortcut.IconLocation = "$appExe,0"
+    $shortcut.Description = 'Launch ChatGPT with Arabic RTL support'
     $shortcut.Save()
+    Remove-Item -LiteralPath $legacyShortcutPath -Force -ErrorAction SilentlyContinue
     exit 0
 }
 
@@ -36,7 +44,11 @@ function Start-BackgroundScript([string]$ScriptPath) {
 function Ensure-BackgroundServices {
     Start-BackgroundScript (Join-Path $PSScriptRoot 'watch-codex-rtl.ps1')
     $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-    $autoUpdate = Get-ItemPropertyValue -Path $runKey -Name 'CodexArabicRTLAutoUpdate' -ErrorAction SilentlyContinue
+    $runValues = Get-ItemProperty -Path $runKey -ErrorAction SilentlyContinue
+    $autoUpdate = $runValues.ChatGPTArabicRTLAutoUpdate
+    if (-not $autoUpdate) {
+        $autoUpdate = $runValues.CodexArabicRTLAutoUpdate
+    }
     if ($autoUpdate) {
         Start-BackgroundScript (Join-Path $PSScriptRoot 'auto-update-loop.ps1')
     }
@@ -60,20 +72,20 @@ if ($debuggingReady) {
     exit 0
 }
 
-$mainProcesses = Get-CimInstance Win32_Process -Filter "Name='Codex.exe'" |
-    Where-Object { $_.ExecutablePath -eq $codexExe -and $_.CommandLine -notlike '*--type=*' }
+$mainProcesses = Get-CimInstance Win32_Process -Filter ("Name='{0}.exe'" -f $processName) |
+    Where-Object { $_.ExecutablePath -eq $appExe -and $_.CommandLine -notlike '*--type=*' }
 foreach ($process in $mainProcesses) {
     Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
 }
 
 for ($attempt = 0; $attempt -lt 20; $attempt++) {
-    $stillRunning = Get-CimInstance Win32_Process -Filter "Name='Codex.exe'" |
-        Where-Object { $_.ExecutablePath -eq $codexExe -and $_.CommandLine -notlike '*--type=*' }
+    $stillRunning = Get-CimInstance Win32_Process -Filter ("Name='{0}.exe'" -f $processName) |
+        Where-Object { $_.ExecutablePath -eq $appExe -and $_.CommandLine -notlike '*--type=*' }
     if (-not $stillRunning) { break }
     Start-Sleep -Milliseconds 250
 }
 
-Start-Process -FilePath $codexExe -ArgumentList @(
+Start-Process -FilePath $appExe -ArgumentList @(
     '--remote-debugging-address=127.0.0.1',
     '--remote-debugging-port=9223',
     '--no-first-run'

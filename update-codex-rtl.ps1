@@ -2,9 +2,9 @@ param([switch]$Silent)
 
 $ErrorActionPreference = 'Stop'
 $repo = 'ammaryaser99/codex-arabic-rtl-patch'
-$installDir = Join-Path $env:LOCALAPPDATA 'CodexArabicRTL'
+$installDir = Join-Path $env:LOCALAPPDATA 'ChatGPTArabicRTL'
 $manifestPath = Join-Path $installDir 'version.json'
-$apiHeaders = @{ 'User-Agent' = 'Codex-Arabic-RTL-Patch' }
+$apiHeaders = @{ 'User-Agent' = 'ChatGPT-Arabic-RTL-Patch' }
 $cacheBust = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
 function Write-UpdateStatus([string]$message, [ConsoleColor]$color = 'Gray') {
@@ -30,7 +30,7 @@ try {
     $asset = $release.assets | Where-Object { $_.name -eq 'Codex-Arabic-RTL-Patch.zip' } | Select-Object -First 1
     if (-not $asset) { throw "Release v$remoteVersion does not contain Codex-Arabic-RTL-Patch.zip." }
 
-    $temp = Join-Path $env:TEMP ("CodexArabicRTL-" + [guid]::NewGuid().ToString('N'))
+    $temp = Join-Path $env:TEMP ("ChatGPTArabicRTL-" + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $temp -Force | Out-Null
     try {
         $archive = Join-Path $temp 'patch.zip'
@@ -43,10 +43,10 @@ try {
         if ([version]$remote.version -ne $remoteVersion) { throw 'The release tag and manifest version do not match.' }
 
         Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
-            Where-Object { $_.CommandLine -like '*CodexArabicRTL*codex-rtl-patch.mjs*' } |
+            Where-Object { $_.CommandLine -like '*ChatGPTArabicRTL*codex-rtl-patch.mjs*' } |
             ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
         Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
-            Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*CodexArabicRTL*watch-codex-rtl.ps1*' } |
+            Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*ChatGPTArabicRTL*watch-codex-rtl.ps1*' } |
             ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 
         foreach ($file in $remote.files) {

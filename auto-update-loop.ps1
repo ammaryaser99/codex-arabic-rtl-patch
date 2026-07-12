@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'SilentlyContinue'
-$mutex = [Threading.Mutex]::new($false, 'Local\CodexArabicRTLAutoUpdate')
+$mutex = [Threading.Mutex]::new($false, 'Local\ChatGPTArabicRTLAutoUpdate')
 if (-not $mutex.WaitOne(0, $false)) { exit 0 }
 
 try {
@@ -13,4 +13,3 @@ finally {
     $mutex.ReleaseMutex()
     $mutex.Dispose()
 }
-

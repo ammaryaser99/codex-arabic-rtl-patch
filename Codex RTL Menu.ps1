@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Continue'
 do {
     Clear-Host
     Write-Host '=========================================' -ForegroundColor Cyan
-    Write-Host '       Codex Arabic RTL Patch Menu       ' -ForegroundColor Cyan
+    Write-Host '      ChatGPT Arabic RTL Patch Menu      ' -ForegroundColor Cyan
     Write-Host '=========================================' -ForegroundColor Cyan
     Write-Host '1. Install / repair patch'
     Write-Host '2. Enable automatic patch updates'
@@ -25,4 +25,3 @@ do {
         Read-Host 'Press Enter to return to the menu' | Out-Null
     }
 } while ($choice -ne '0')
-

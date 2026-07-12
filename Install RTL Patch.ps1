@@ -1,9 +1,12 @@
 param([switch]$Silent)
 
 $ErrorActionPreference = 'Stop'
-$installDir = Join-Path $env:LOCALAPPDATA 'CodexArabicRTL'
+$installDir = Join-Path $env:LOCALAPPDATA 'ChatGPTArabicRTL'
+$legacyInstallDir = Join-Path $env:LOCALAPPDATA 'CodexArabicRTL'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-$runName = 'CodexArabicRTL'
+$runName = 'ChatGPTArabicRTL'
+$runValues = Get-ItemProperty -Path $runKey -ErrorAction SilentlyContinue
+$autoUpdateEnabled = [bool]($runValues.ChatGPTArabicRTLAutoUpdate -or $runValues.CodexArabicRTLAutoUpdate)
 $files = @(
     'codex-rtl-patch.js',
     'watch-codex-rtl.ps1',
@@ -14,6 +17,11 @@ $files = @(
 )
 
 New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+Remove-ItemProperty -Path $runKey -Name 'CodexArabicRTL' -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path $runKey -Name 'CodexArabicRTLAutoUpdate' -ErrorAction SilentlyContinue
+Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
+    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like "*$legacyInstallDir*" } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 Remove-Item -LiteralPath (Join-Path $installDir 'codex-rtl-patch.mjs') -Force -ErrorAction SilentlyContinue
 foreach ($file in $files) {
     $source = Join-Path $PSScriptRoot $file
@@ -30,16 +38,25 @@ Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
     Where-Object { $_.CommandLine -like '*codex-rtl-patch.mjs*' } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
-    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*CodexArabicRTL*watch-codex-rtl.ps1*' } |
+    Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like "*$installDir*" } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 
 Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @(
     '-NoProfile', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', ('"{0}"' -f $watcher)
 )
+if ($autoUpdateEnabled) {
+    $loop = Join-Path $installDir 'auto-update-loop.ps1'
+    $autoUpdateCommand = 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $loop
+    Set-ItemProperty -Path $runKey -Name 'ChatGPTArabicRTLAutoUpdate' -Value $autoUpdateCommand
+    Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @(
+        '-NoProfile', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', ('"{0}"' -f $loop)
+    )
+}
 & (Join-Path $installDir 'Start-Codex-RTL.ps1') -CreateShortcut
+Remove-Item -LiteralPath $legacyInstallDir -Recurse -Force -ErrorAction SilentlyContinue
 
 if (-not $Silent) {
     $version = (Get-Content -Raw -LiteralPath (Join-Path $installDir 'version.json') | ConvertFrom-Json).version
-    Write-Host "Codex Arabic RTL patch v$version installed." -ForegroundColor Green
-    Write-Host 'Close Codex, then use the new desktop shortcut: Codex Arabic RTL' -ForegroundColor Cyan
+    Write-Host "ChatGPT Arabic RTL patch v$version installed." -ForegroundColor Green
+    Write-Host 'Close ChatGPT, then use the new desktop shortcut: ChatGPT Arabic RTL' -ForegroundColor Cyan
 }
