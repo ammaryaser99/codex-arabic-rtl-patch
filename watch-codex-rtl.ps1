@@ -32,7 +32,7 @@ function Send-CdpMessage {
         $count = [Math]::Min(1024, $bytes.Length - $offset)
         $isFinal = ($offset + $count -ge $bytes.Length)
         $segment = [ArraySegment[byte]]::new($bytes, $offset, $count)
-        $Socket.SendAsync($segment, [Net.WebSockets.WebSocketMessageType]::Text, $isFinal, [Threading.CancellationToken]::None).GetAwaiter().GetResult()
+        [void]$Socket.SendAsync($segment, [Net.WebSockets.WebSocketMessageType]::Text, $isFinal, [Threading.CancellationToken]::None).GetAwaiter().GetResult()
     }
 }
 
@@ -58,7 +58,7 @@ try {
         foreach ($id in @($clients.Keys)) {
             if ($id -notin $liveIds -or $clients[$id].State -ne [Net.WebSockets.WebSocketState]::Open) {
                 $clients[$id].Dispose()
-                $clients.Remove($id)
+                [void]$clients.Remove($id)
             }
         }
 
@@ -66,7 +66,7 @@ try {
             if ($target.type -ne 'page' -or $target.url -notlike 'app://-/*' -or $clients.ContainsKey($target.id)) { continue }
             try {
                 $socket = [Net.WebSockets.ClientWebSocket]::new()
-                $socket.ConnectAsync([uri]$target.webSocketDebuggerUrl, [Threading.CancellationToken]::None).GetAwaiter().GetResult()
+                [void]$socket.ConnectAsync([uri]$target.webSocketDebuggerUrl, [Threading.CancellationToken]::None).GetAwaiter().GetResult()
                 Send-CdpMessage -Socket $socket -Id 1 -Method 'Page.addScriptToEvaluateOnNewDocument' -Source $source
                 Send-CdpMessage -Socket $socket -Id 2 -Method 'Runtime.evaluate' -Source $source
                 $clients[$target.id] = $socket

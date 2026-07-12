@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.2 - 2026-07-12
+
+- Suppresses internal PowerShell async return values so the hidden watcher stays completely silent.
+
 ## 1.5.1 - 2026-07-12
 
 - Connects to the ChatGPT debugging endpoint through `localhost`, supporting releases that listen on IPv6 loopback (`::1`) instead of IPv4 (`127.0.0.1`).
