@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '1.4.2';
+  const VERSION = '1.5.5';
   const STYLE_ID = 'codex-arabic-rtl-patch';
   const RTL_ATTR = 'data-codex-rtl';
   const BIDI_ATTR = 'data-codex-bidi';

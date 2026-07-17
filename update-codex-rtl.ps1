@@ -2,9 +2,17 @@ param([switch]$Silent)
 
 $ErrorActionPreference = 'Stop'
 $repo = 'ammaryaser99/codex-arabic-rtl-patch'
-$installDir = Join-Path $env:LOCALAPPDATA 'CodexArabicRTL'
+$preferredInstallDir = Join-Path $env:LOCALAPPDATA 'ChatGPTArabicRTL'
+$legacyInstallDir = Join-Path $env:LOCALAPPDATA 'CodexArabicRTL'
+$installDir = if (Test-Path -LiteralPath (Join-Path $preferredInstallDir 'version.json')) {
+    $preferredInstallDir
+} elseif (Test-Path -LiteralPath (Join-Path $legacyInstallDir 'version.json')) {
+    $legacyInstallDir
+} else {
+    $preferredInstallDir
+}
 $manifestPath = Join-Path $installDir 'version.json'
-$apiHeaders = @{ 'User-Agent' = 'Codex-Arabic-RTL-Patch' }
+$apiHeaders = @{ 'User-Agent' = 'ChatGPT-Arabic-RTL-Patch' }
 $cacheBust = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
 function Write-UpdateStatus([string]$message, [ConsoleColor]$color = 'Gray') {
@@ -30,7 +38,7 @@ try {
     $asset = $release.assets | Where-Object { $_.name -eq 'Codex-Arabic-RTL-Patch.zip' } | Select-Object -First 1
     if (-not $asset) { throw "Release v$remoteVersion does not contain Codex-Arabic-RTL-Patch.zip." }
 
-    $temp = Join-Path $env:TEMP ("CodexArabicRTL-" + [guid]::NewGuid().ToString('N'))
+    $temp = Join-Path $env:TEMP ("ChatGPTArabicRTL-" + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $temp -Force | Out-Null
     try {
         $archive = Join-Path $temp 'patch.zip'
@@ -43,10 +51,14 @@ try {
         if ([version]$remote.version -ne $remoteVersion) { throw 'The release tag and manifest version do not match.' }
 
         Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
-            Where-Object { $_.CommandLine -like '*CodexArabicRTL*codex-rtl-patch.mjs*' } |
+            Where-Object { $_.CommandLine -like '*codex-rtl-patch.mjs*' } |
             ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
         Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
-            Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*CodexArabicRTL*watch-codex-rtl.ps1*' } |
+            Where-Object {
+                $_.ProcessId -ne $PID -and
+                ($_.CommandLine -like '*ChatGPTArabicRTL*watch-codex-rtl.ps1*' -or
+                 $_.CommandLine -like '*CodexArabicRTL*watch-codex-rtl.ps1*')
+            } |
             ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 
         foreach ($file in $remote.files) {
@@ -54,9 +66,12 @@ try {
             Copy-Item -LiteralPath (Join-Path $expanded $file) -Destination $installDir -Force
         }
 
-        $watcher = Join-Path $installDir 'watch-codex-rtl.ps1'
         $launcher = Join-Path $installDir 'Start-Codex-RTL.ps1'
         if (Test-Path -LiteralPath $launcher) { & $launcher -CreateShortcut }
+        if (Test-Path -LiteralPath (Join-Path $preferredInstallDir 'version.json')) {
+            $installDir = $preferredInstallDir
+        }
+        $watcher = Join-Path $installDir 'watch-codex-rtl.ps1'
         Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @(
             '-NoProfile', '-WindowStyle', 'Hidden', '-ExecutionPolicy', 'Bypass', '-File', ('"{0}"' -f $watcher)
         )

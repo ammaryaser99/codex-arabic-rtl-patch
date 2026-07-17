@@ -26,6 +26,7 @@ jobs:
             throw "Version mismatch: manifest=$($manifest.version), source=$sourceVersion"
           }
           foreach ($file in $manifest.files) {
+            if ($file -notmatch '^[A-Za-z0-9._-]+$') { throw "Unsafe update filename: $file" }
             if (-not (Test-Path -LiteralPath $file)) { throw "Missing update file: $file" }
           }
       - name: Ensure private drafts are not tracked
