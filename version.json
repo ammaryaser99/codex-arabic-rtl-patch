@@ -1,5 +1,5 @@
 {
-  "version": "1.4.2",
+  "version": "1.5.5",
   "files": [
     "codex-rtl-patch.js",
     "watch-codex-rtl.ps1",
