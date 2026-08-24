@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.6 - 2026-08-24
+
+- Restores Arabic RTL formatting after ChatGPT introduced CSS classes containing `codex`.
+- Prevents `codex-description` and shimmer-highlight containers from being misclassified as code output.
+- Removes stale LTR markers left by an older injected patch before rescanning the current UI.
+
 ## 1.5.5 - 2026-07-16
 
 - Migrates existing v1.4.2 auto-update users from `CodexArabicRTL` to `ChatGPTArabicRTL`.

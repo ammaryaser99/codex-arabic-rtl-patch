@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '1.5.5';
+  const VERSION = '1.5.6';
   const STYLE_ID = 'codex-arabic-rtl-patch';
   const RTL_ATTR = 'data-codex-rtl';
   const BIDI_ATTR = 'data-codex-bidi';
@@ -19,9 +19,13 @@
 
   const codeSelector = [
     'pre', 'code', 'kbd', 'samp',
-    '[data-testid*="code" i]', '[data-testid*="terminal" i]',
-    '[class*="code" i]', '[class*="highlight" i]', '[class*="shiki" i]',
-    '[class*="terminal" i]', '[class*="monaco" i]'
+    '[data-testid="code" i]', '[data-testid^="code-" i]',
+    '[data-testid$="-code" i]', '[data-testid*="code-block" i]',
+    '[data-testid*="codeblock" i]', '[data-testid*="terminal" i]',
+    '[class~="code" i]', '[class*="code-block" i]', '[class*="codeblock" i]',
+    '[class~="highlight" i]', '[class*="syntax-highlight" i]', '[class*="shiki" i]',
+    '[class~="terminal" i]', '[class*="terminal-" i]', '[class*="_Terminal_" i]',
+    '[class*="monaco-editor" i]'
   ].join(',');
   const editorSelector = 'textarea,input,[contenteditable="true"],[role="textbox"]';
   const selector = [
@@ -36,6 +40,17 @@
     '[class*="markdown" i]', '[class*="whitespace-pre-wrap" i]',
     '[data-message-author-role]', '[data-testid*="message" i]', 'div'
   ].join(',');
+
+  function resetCodeDirectionMarkers() {
+    document.querySelectorAll(`[${CODE_ATTR}]`).forEach((element) => {
+      element.removeAttribute(CODE_ATTR);
+      if (element.getAttribute('dir') === 'ltr') element.removeAttribute('dir');
+    });
+  }
+
+  // Earlier versions matched the "code" inside new classes such as
+  // "text-codex-description" and incorrectly forced whole conversations LTR.
+  resetCodeDirectionMarkers();
 
   const style = document.createElement('style');
   style.id = STYLE_ID;
@@ -224,6 +239,7 @@
       document.removeEventListener('input', onInput, true);
       document.removeEventListener('keydown', onKeydown, true);
       style.remove();
+      resetCodeDirectionMarkers();
     }
   };
   scan();
