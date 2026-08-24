@@ -1,13 +1,11 @@
 {
-  "version": "1.5.2",
+  "version": "1.5.6",
   "files": [
     "codex-rtl-patch.js",
     "watch-codex-rtl.ps1",
     "update-codex-rtl.ps1",
     "auto-update-loop.ps1",
     "Start-Codex-RTL.ps1",
-    "ChatGPT RTL Menu.ps1",
-    "ChatGPT RTL Menu.cmd",
     "version.json"
   ]
 }

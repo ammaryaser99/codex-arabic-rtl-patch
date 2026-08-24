@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.5.6 - 2026-08-24
+
+- Restores Arabic RTL formatting after ChatGPT introduced CSS classes containing `codex`.
+- Prevents `codex-description` and shimmer-highlight containers from being misclassified as code output.
+- Removes stale LTR markers left by an older injected patch before rescanning the current UI.
+
+## 1.5.5 - 2026-07-16
+
+- Migrates existing v1.4.2 auto-update users from `CodexArabicRTL` to `ChatGPTArabicRTL`.
+- Keeps the automatic updater working after Windows restarts during the product-name transition.
+- Restricts the update manifest to safe runtime filenames so legacy updaters accept the release.
+- Adds a menu option to check GitHub for updates immediately.
+
+## 1.5.4 - 2026-07-16
+
+- Launches the Microsoft Store/MSIX build through Windows packaged-app activation.
+- Fixes `Access is denied` failures when the updated package blocks direct `ChatGPT.exe` startup.
+- Preserves the remote-debugging arguments required by the RTL watcher.
+
+## 1.5.3 - 2026-07-16
+
+- Refreshes the desktop shortcut after ChatGPT Microsoft Store updates.
+- Prevents repeated shortcut clicks from racing and terminating the replacement app.
+- Replaces slow proxy-aware localhost probes with fast direct debugging checks.
+- Waits for the previous ChatGPT process tree to exit before starting the RTL instance.
+- Records hidden launcher failures in `launcher.log` and opens ChatGPT normally as a fallback.
+
 ## 1.5.2 - 2026-07-12
 
 - Suppresses internal PowerShell async return values so the hidden watcher stays completely silent.

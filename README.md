@@ -45,6 +45,8 @@ There are two separate protections:
 1. The local watcher starts with Windows and reconnects whenever ChatGPT starts, restarts, or is updated by the Microsoft Store. It reapplies the installed RTL patch automatically.
 2. When option `2` is enabled, a user-level background updater checks this GitHub repository every six hours. If a newer patch version is published, it downloads the new files and restarts the watcher.
 
+Choose option `3` in the menu whenever you want to check GitHub immediately instead of waiting for the next six-hour check.
+
 The `ChatGPT Arabic RTL` desktop shortcut also checks both background processes on every launch and restarts either one if Windows stopped it.
 
 This matters because a future ChatGPT UI update may rename internal elements. The watcher handles normal app restarts automatically; the GitHub updater delivers compatibility fixes when the patch itself needs to change.
